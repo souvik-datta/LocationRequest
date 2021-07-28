@@ -1,14 +1,15 @@
 package com.udacity.project4.locationreminders.savereminder
 
 import android.app.Application
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import com.google.android.gms.maps.model.PointOfInterest
+import com.udacity.project4.Event
 import com.udacity.project4.R
 import com.udacity.project4.base.BaseViewModel
 import com.udacity.project4.base.NavigationCommand
 import com.udacity.project4.locationreminders.data.ReminderDataSource
 import com.udacity.project4.locationreminders.data.dto.ReminderDTO
+import com.udacity.project4.locationreminders.data.dto.Result
 import com.udacity.project4.locationreminders.reminderslist.ReminderDataItem
 import kotlinx.coroutines.launch
 
@@ -20,6 +21,9 @@ class SaveReminderViewModel(val app: Application, val dataSource: ReminderDataSo
     val selectedPOI = MutableLiveData<PointOfInterest>()
     val latitude = MutableLiveData<Double>()
     val longitude = MutableLiveData<Double>()
+    // private val tasks: LiveData<Result<List<ReminderDTO>>> = dataSource as.observeTasks()
+    lateinit var error: LiveData<Boolean>
+    lateinit var empty: LiveData<Boolean>
 
     /**
      * Clear the live data objects to start fresh next time the view model gets called
@@ -45,7 +49,7 @@ class SaveReminderViewModel(val app: Application, val dataSource: ReminderDataSo
     /**
      * Save the reminder to the data source
      */
-    fun saveReminder(reminderData: ReminderDataItem) {
+    private fun saveReminder(reminderData: ReminderDataItem) {
         showLoading.value = true
         viewModelScope.launch {
             dataSource.saveReminder(
@@ -60,7 +64,16 @@ class SaveReminderViewModel(val app: Application, val dataSource: ReminderDataSo
             )
             showLoading.value = false
             showToast.value = app.getString(R.string.reminder_saved)
-            navigationCommand.value = NavigationCommand.Back
+            //navigationCommand.value = NavigationCommand.Back
+        }
+    }
+    fun refresh() {
+        showLoading.value = true
+        viewModelScope.launch {
+            dataSource.refreshReminders()
+            error = dataSource.observeReminders().map { it is Result.Error }
+            empty = dataSource.observeReminders().map { (it as? Result.Success)?.data.isNullOrEmpty() }
+            showLoading.value = false
         }
     }
 
@@ -79,4 +92,11 @@ class SaveReminderViewModel(val app: Application, val dataSource: ReminderDataSo
         }
         return true
     }
+    private val _newTaskEvent = MutableLiveData<Event<Unit>>()
+    val newTaskEvent: LiveData<Event<Unit>> = _newTaskEvent
+    fun addNewTask() {
+        _newTaskEvent.value = Event(Unit)
+    }
 }
+private const val HINT_INDEX_KEY = "hintIndex"
+private const val GEOFENCE_INDEX_KEY = "geofenceIndex"

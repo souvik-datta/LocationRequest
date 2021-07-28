@@ -1,16 +1,23 @@
-package com.udacity.project4.locationreminders.savereminder
+package com.udacity.project4.locationreminders
 
-import androidx.test.ext.junit.runners.AndroidJUnit4
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.test.*
+import org.junit.rules.TestRule
+import org.junit.runner.Description
+import org.junit.runners.model.Statement
 
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import org.junit.runner.RunWith
+class TestCoroutineRule : TestRule{
+    public val testCoroutineDispatcher=TestCoroutineDispatcher()
+    public val testCoroutineScope = TestCoroutineScope((testCoroutineDispatcher))
 
-@ExperimentalCoroutinesApi
-@RunWith(AndroidJUnit4::class)
-class SaveReminderViewModelTest {
-
-
-    //TODO: provide testing to the SaveReminderView and its live data objects
-
-
+    override fun apply(base: Statement, description: Description?)= object: Statement() {
+        @Throws(Throwable::class)
+        override fun evaluate() {
+            Dispatchers.setMain(testCoroutineDispatcher)
+            base.evaluate()
+            Dispatchers.resetMain()
+            testCoroutineScope.cleanupTestCoroutines()
+        }
+    }
+    fun runBlockingTest(block:suspend TestCoroutineScope.()->Unit)= testCoroutineScope.runBlockingTest{block()}
 }

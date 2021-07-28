@@ -3,28 +3,71 @@ package com.udacity.project4.locationreminders.data.local
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
-import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.test.filters.MediumTest
+import androidx.test.espresso.matcher.ViewMatchers
+import com.udacity.project4.NoteFactory
 import com.udacity.project4.locationreminders.data.dto.ReminderDTO
 import com.udacity.project4.locationreminders.data.dto.Result
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
-import org.hamcrest.CoreMatchers.`is`
-import org.hamcrest.CoreMatchers.instanceOf
-import org.hamcrest.MatcherAssert.assertThat
-import org.junit.After
-import org.junit.Before
-import org.junit.Rule
-import org.junit.Test
-import org.junit.runner.RunWith
+import kotlinx.coroutines.test.runBlockingTest
+import org.hamcrest.CoreMatchers
+import org.hamcrest.MatcherAssert
+import org.junit.*
 
 @ExperimentalCoroutinesApi
-@RunWith(AndroidJUnit4::class)
-//Medium Test to test the repository
-@MediumTest
 class RemindersLocalRepositoryTest {
+    private lateinit var repository: RemindersLocalRepository
+    private lateinit var database: RemindersDatabase
 
-//    TODO: Add testing implementation to the RemindersLocalRepository.kt
+    @get:Rule
+    var instantExecutorRule = InstantTaskExecutorRule()
 
+    @Before
+    fun setup() {
+        database = Room.inMemoryDatabaseBuilder(
+            ApplicationProvider.getApplicationContext(),
+            RemindersDatabase::class.java
+        )
+            .allowMainThreadQueries()
+            .build()
+
+        repository =
+            RemindersLocalRepository(
+                database.reminderDao(),
+                Dispatchers.Main
+            )
+    }
+
+    @Test
+    fun saveReminder_retrievesReminder() = runBlocking {
+        val newTask = ReminderDTO("title", "description", "22.8745, 88.6971", 22.8745, 88.6971)
+        repository.saveReminder(newTask)
+        val result = repository.getReminder(newTask.id)
+        result as Result.Success
+        ViewMatchers.assertThat(result.data.title, CoreMatchers.`is`("title"))
+        ViewMatchers.assertThat(result.data.description, CoreMatchers.`is`("description"))
+    }
+
+    @Test
+    fun completeReminder_retrievedReminderIsComplete() = runBlocking {
+        val newTask = ReminderDTO("title", "description", "22.8745, 88.6971", 22.8745, 88.6971)
+        repository.saveReminder(newTask)
+        val result = repository.getReminder(newTask.id)
+        result as Result.Success
+        ViewMatchers.assertThat(result.data.title, CoreMatchers.`is`(newTask.title))
+    }
+
+    @Test
+    fun errorReminder_retrievesReminder() = runBlocking {
+        val newTask = ReminderDTO("title", "description", "22.8745, 88.6971", 22.8745, 88.6971)
+        val result = repository.getReminder(newTask.id)
+        result as Result.Error
+        ViewMatchers.assertThat(result.message, CoreMatchers.`is`("data not found!"))
+    }
+
+    @After
+    fun cleanUp() {
+        database.close()
+    }
 }

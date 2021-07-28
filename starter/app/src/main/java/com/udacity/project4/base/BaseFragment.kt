@@ -4,7 +4,9 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
+import com.google.android.gms.maps.model.LatLng
 import com.google.android.material.snackbar.Snackbar
+import com.udacity.project4.utils.SingleLiveEvent
 
 /**
  * Base Fragment to observe on the common LiveData objects
@@ -14,6 +16,7 @@ abstract class BaseFragment : Fragment() {
      * Every fragment has to have an instance of a view model that extends from the BaseViewModel
      */
     abstract val _viewModel: BaseViewModel
+    val navigationCommand: SingleLiveEvent<NavigationCommand> = SingleLiveEvent()
 
     override fun onStart() {
         super.onStart()
@@ -41,4 +44,8 @@ abstract class BaseFragment : Fragment() {
             }
         })
     }
+
+    abstract fun styleMap(mapTypeNormal: String)
+    abstract fun askUserForMarkerOrPOI(latLng: LatLng, zoom: Float, title: String)
+    abstract fun addGeofenceForClue()
 }
