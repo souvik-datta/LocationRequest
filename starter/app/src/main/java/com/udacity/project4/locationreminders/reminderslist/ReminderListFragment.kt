@@ -7,6 +7,7 @@ import android.content.Intent
 import android.content.IntentSender
 import android.content.pm.PackageManager
 import android.location.LocationManager
+import android.opengl.Visibility
 import android.os.Bundle
 import android.util.Log
 import android.view.*
@@ -106,6 +107,7 @@ class ReminderListFragment : BaseFragment() {
 
     override fun onResume() {
         super.onResume()
+        binding.progressBar.visibility = View.GONE
         //load the reminders list on the ui
         // _viewModel.loadReminders()
     }

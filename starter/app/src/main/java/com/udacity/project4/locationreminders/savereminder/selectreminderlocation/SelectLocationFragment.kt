@@ -170,6 +170,7 @@ class SelectLocationFragment : BaseFragment() {
     private val runningQOrLater =
         android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q
     private var poiMarker: Marker? = null
+    private var snackbar: Snackbar? = null
 
     companion object {
         private const val DEFAULT_ZOOM = 15f
@@ -223,11 +224,12 @@ class SelectLocationFragment : BaseFragment() {
             if (getRuntimePermissions() && statusCheck())
                 onLocationSelected()
             else {
-                Snackbar.make(
+                snackbar = Snackbar.make(
                     binding.root,
                     "Please allow all the permissions",
                     Snackbar.LENGTH_LONG
-                ).show()
+                )
+                snackbar?.show()
             }
         }
     }
@@ -387,13 +389,14 @@ class SelectLocationFragment : BaseFragment() {
                 } else {
                     Log.d("TAG", "onComplete: current location is null")
                     view?.let { it1 ->
-                        Snackbar.make(
+                        snackbar = Snackbar.make(
                             it1,
                             "Yours location is not retrieved! Try again.", Snackbar.LENGTH_LONG
                         ).setAction("Retry") {
                             getMyLocation()
                             fetchLocation()
-                        }.show()
+                        }
+                        snackbar?.show()
                     }
                 }
             }
@@ -499,7 +502,7 @@ class SelectLocationFragment : BaseFragment() {
                     PackageManager.PERMISSION_DENIED)
         ) {
             // Permission denied.
-            Snackbar.make(
+            snackbar = Snackbar.make(
                 binding.root,
                 R.string.permission_denied_explanation, Snackbar.LENGTH_INDEFINITE
             )
@@ -511,7 +514,8 @@ class SelectLocationFragment : BaseFragment() {
                         data = Uri.fromParts("package", BuildConfig.APPLICATION_ID, null)
                         flags = Intent.FLAG_ACTIVITY_NEW_TASK
                     })
-                }.show()
+                }
+            snackbar?.show()
         } else {
             checkDeviceLocationSettingsAndStartGeofence()
         }
@@ -584,12 +588,13 @@ class SelectLocationFragment : BaseFragment() {
                     Log.d("TAG", "Error geting location settings resolution: " + sendEx.message)
                 }
             } else {
-                Snackbar.make(
+                snackbar = Snackbar.make(
                     binding.root,
                     R.string.location_required_error, Snackbar.LENGTH_INDEFINITE
                 ).setAction(android.R.string.ok) {
                     checkDeviceLocationSettingsAndStartGeofence()
-                }.show()
+                }
+                snackbar?.show()
             }
         }
         locationSettingsResponseTask.addOnCompleteListener {
@@ -753,5 +758,10 @@ class SelectLocationFragment : BaseFragment() {
                 }
             }
         }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        snackbar?.dismiss()
     }
 }

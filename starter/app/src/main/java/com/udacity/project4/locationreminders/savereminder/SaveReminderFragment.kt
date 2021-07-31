@@ -27,6 +27,7 @@ import androidx.core.content.ContextCompat.getSystemService
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
+import androidx.navigation.fragment.findNavController
 import com.google.android.gms.common.api.GoogleApiClient
 import com.google.android.gms.common.api.PendingResult
 import com.google.android.gms.common.api.ResolvableApiException
@@ -203,6 +204,7 @@ class SaveReminderFragment : BaseFragment() {
         } else {
             Log.d("TAG", "title and description are empty")
         }
+        findNavController().popBackStack()
     }
 
     private fun getGeofencingRequest(): GeofencingRequest {
