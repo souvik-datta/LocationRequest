@@ -169,6 +169,7 @@ class SelectLocationFragment : BaseFragment() {
     private val LOCATION_PERMISSION_INDEX = 0
     private val runningQOrLater =
         android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q
+    private var poiMarker: Marker? = null
 
     companion object {
         private const val DEFAULT_ZOOM = 15f
@@ -234,14 +235,48 @@ class SelectLocationFragment : BaseFragment() {
 
     private fun setPoiClick() {
         mMap.setOnPoiClickListener { poi ->
-            val poiMarker = mMap.addMarker(
-                MarkerOptions()
-                    .position(poi.latLng)
-                    .title(poi.name)
-            )
-            poiMarker.showInfoWindow()
-            userLocation.latitude = poiMarker.position.latitude
-            userLocation.longitude = poiMarker.position.longitude
+            if (poiMarker == null)
+                poiMarker = mMap.addMarker(
+                    MarkerOptions()
+                        .position(poi.latLng)
+                        .title(poi.name)
+                )
+            else
+                poiMarker?.apply {
+                    position = poi.latLng
+                    title = poi.name
+                }
+            poiMarker?.showInfoWindow()
+            userLocation.latitude = poiMarker?.position?.latitude ?: 0.0
+            userLocation.longitude = poiMarker?.position?.longitude ?: 0.0
+        }
+        mMap.setOnMapClickListener {
+            if (poiMarker == null)
+                poiMarker = mMap.addMarker(
+                    MarkerOptions()
+                        .position(LatLng(it.latitude, it.longitude))
+                )
+            else
+                poiMarker?.apply {
+                    position = LatLng(it.latitude, it.longitude)
+                }
+            poiMarker?.showInfoWindow()
+            userLocation.latitude = poiMarker?.position?.latitude ?: 0.0
+            userLocation.longitude = poiMarker?.position?.longitude ?: 0.0
+        }
+        mMap.setOnMapLongClickListener {
+            if (poiMarker == null)
+                poiMarker = mMap.addMarker(
+                    MarkerOptions()
+                        .position(LatLng(it.latitude, it.longitude))
+                )
+            else
+                poiMarker?.apply {
+                    position = LatLng(it.latitude, it.longitude)
+                }
+            poiMarker?.showInfoWindow()
+            userLocation.latitude = poiMarker?.position?.latitude ?: 0.0
+            userLocation.longitude = poiMarker?.position?.longitude ?: 0.0
         }
     }
 
@@ -393,13 +428,18 @@ class SelectLocationFragment : BaseFragment() {
             "moveCamera: moving the camera to: lat: $latLng.latitude, lng: $latLng.longitude"
         )
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, zoom))
-        mMap.addMarker(
-            MarkerOptions()
-                .position(latLng)
-                .title(title)
-                .draggable(true)
-                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))
-        )
+        if (poiMarker == null)
+            poiMarker = mMap.addMarker(
+                MarkerOptions()
+                    .position(latLng)
+                    .title(title)
+                    .draggable(true)
+                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))
+            )
+        else
+            poiMarker?.apply {
+                position = latLng
+            }
         // setPoiClick()
         mMap.setOnMarkerDragListener(object : GoogleMap.OnMarkerDragListener {
             override fun onMarkerDragStart(marker: Marker) {}
@@ -628,6 +668,9 @@ class SelectLocationFragment : BaseFragment() {
                         "My Location"
                     )
 */
+                    LocationServices.getFusedLocationProviderClient(requireActivity() as RemindersActivity)
+                        .removeLocationUpdates(mLocationCallback)
+                    mLocationCallback = null
 
                     moveCamera(
                         LatLng(
@@ -638,9 +681,6 @@ class SelectLocationFragment : BaseFragment() {
                 } catch (e: Exception) {
                     Log.d("TAG", "Location: ${e.message}")
                 }
-                if (isVisible)
-                    LocationServices.getFusedLocationProviderClient(requireActivity() as RemindersActivity)
-                        .removeLocationUpdates(mLocationCallback)
             }
         }
 
@@ -654,7 +694,7 @@ class SelectLocationFragment : BaseFragment() {
         ) {
             getRuntimePermissions()
         } else {
-            LocationServices.getFusedLocationProviderClient(this.requireActivity())
+            LocationServices.getFusedLocationProviderClient(requireActivity() as RemindersActivity)
                 .requestLocationUpdates(mLocationRequest, mLocationCallback, null)
         }
     }

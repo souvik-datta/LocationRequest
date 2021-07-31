@@ -12,6 +12,7 @@ import android.util.Log
 import android.view.*
 import androidx.core.app.ActivityCompat
 import androidx.databinding.DataBindingUtil
+import androidx.navigation.fragment.findNavController
 import com.firebase.ui.auth.AuthUI
 import com.google.android.gms.common.api.GoogleApiClient
 import com.google.android.gms.common.api.PendingResult
@@ -22,6 +23,7 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuth
 import com.udacity.project4.R
+import com.udacity.project4.authentication.AuthenticationActivity
 import com.udacity.project4.base.BaseFragment
 import com.udacity.project4.base.NavigationCommand
 import com.udacity.project4.databinding.FragmentRemindersBinding
@@ -77,7 +79,7 @@ class ReminderListFragment : BaseFragment() {
 
     override fun onStart() {
         super.onStart()
-        checkPermissionsAndStartGeofencing()
+//        checkPermissionsAndStartGeofencing()
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -136,6 +138,9 @@ class ReminderListFragment : BaseFragment() {
                 AuthUI.getInstance()
                     .signOut(requireActivity())
                     .addOnCompleteListener {
+                        val intent = Intent()
+                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                        requireActivity().startActivity(Intent(requireActivity(),AuthenticationActivity::class.java))
                         requireActivity().finish()
                     }
             }
