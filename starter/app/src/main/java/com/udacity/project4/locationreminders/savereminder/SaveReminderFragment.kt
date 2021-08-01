@@ -196,6 +196,7 @@ class SaveReminderFragment : BaseFragment() {
                 .addOnSuccessListener {
                     Log.d("TAG", "initiateGeofenceRequest: ")
                     navigationCommand.value = NavigationCommand.Back
+                    findNavController().popBackStack()
                 }
                 .addOnFailureListener {
                     Log.d("TAG", "initiateGeofenceRequest: ${it.message}")
@@ -204,7 +205,6 @@ class SaveReminderFragment : BaseFragment() {
         } else {
             Log.d("TAG", "title and description are empty")
         }
-        findNavController().popBackStack()
     }
 
     private fun getGeofencingRequest(): GeofencingRequest {

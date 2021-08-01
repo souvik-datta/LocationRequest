@@ -431,18 +431,14 @@ class SelectLocationFragment : BaseFragment() {
             "moveCamera: moving the camera to: lat: $latLng.latitude, lng: $latLng.longitude"
         )
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, zoom))
-        if (poiMarker == null)
-            poiMarker = mMap.addMarker(
-                MarkerOptions()
-                    .position(latLng)
-                    .title(title)
-                    .draggable(true)
-                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))
-            )
-        else
-            poiMarker?.apply {
-                position = latLng
-            }
+        poiMarker = mMap.addMarker(
+            MarkerOptions()
+                .position(latLng)
+                .title(title)
+                .draggable(true)
+                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))
+        )
+
         // setPoiClick()
         mMap.setOnMarkerDragListener(object : GoogleMap.OnMarkerDragListener {
             override fun onMarkerDragStart(marker: Marker) {}
