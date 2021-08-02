@@ -121,7 +121,7 @@ class RemindersActivityTest :
         onView(ViewMatchers.withId(com.udacity.project4.R.id.proceed)).perform(ViewActions.click())
         onView(isRoot()).perform(waitFor(2000))
         onView(ViewMatchers.withId(com.udacity.project4.R.id.saveReminder)).perform(ViewActions.click())
-        onView(isRoot()).perform(waitFor(2000))
+        //onView(isRoot()).perform(waitFor(2000))
         onView(withText("Reminder Saved !")).inRoot(ToastMatcher())
             .check(matches(isDisplayed()))
         activityScenario.close()
